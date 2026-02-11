@@ -61,6 +61,13 @@ fun GestorTareasScreen() {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
             ) {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.CheckCircle, contentDescription = "Tareas") },
+                    label = { Text("Tareas") },
+                    selected = pantallaSeleccionada == Pantalla.Tareas.ruta,
+                    onClick = { pantallaSeleccionada = Pantalla.Tareas.ruta }
+                )
+
                 // Item 2: Estadísticas
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.BarChart, contentDescription = "Estadísticas") },
@@ -79,33 +86,49 @@ fun GestorTareasScreen() {
             }
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(if (modoOscuro) Color(0xFF212121) else Color(0xFFF5F5F5))
         ) {
-            // Sección 1: Estadísticas
-            SeccionEstadisticas(listaTareas)
+            when (pantallaSeleccionada) {
 
-            // Sección 2: Filtros rápidos
-            SeccionFiltros()
+                Pantalla.Tareas.ruta -> {
+                    Column {
+                        SeccionEstadisticas(listaTareas)
 
-            // Sección 3: Lista de tareas
-            SeccionListaTareas(
-                tareas = listaTareas,
-                mostrarCompletadas = mostrarCompletadas,
-                onTareaClick = { tareaId ->
-                    listaTareas = listaTareas.map {
-                        if (it.id == tareaId) it.copy(completada = !it.completada)
-                        else it
+                        SeccionFiltros()
+
+                        SeccionListaTareas(
+                            tareas = listaTareas,
+                            mostrarCompletadas = mostrarCompletadas,
+                            onTareaClick = { tareaId ->
+                                listaTareas = listaTareas.map {
+                                    if (it.id == tareaId)
+                                        it.copy(completada = !it.completada)
+                                    else it
+                                }
+                            }
+                        )
                     }
                 }
-            )
+
+                Pantalla.Estadisticas.ruta -> {
+                    EstadisticasScreen(tareas = listaTareas)
+                }
+
+                Pantalla.Ajustes.ruta -> {
+                    AjustesScreen(
+                        modoOscuro = modoOscuro,
+                        onModoOscuroChange = { modoOscuro = it },
+                        mostrarCompletadas = mostrarCompletadas,
+                        onMostrarCompletadasChange = { mostrarCompletadas = it }
+                    )
+                }
+            }
         }
     }
-
-    // Diálogo de información
+        // Diálogo de información
     if (mostrarDialogoInfo) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoInfo = false },
